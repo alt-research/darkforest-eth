@@ -33,14 +33,29 @@ async function whitelistGenerate(
 
   // drip amount
   if (ALT_FAUCET_PRIV_KEY) {
-    for (const wallet of wallets) {
-      await hre.run('wallet:send', {
+    const sender = new hre.ethers.Wallet(ALT_FAUCET_PRIV_KEY, hre.ethers.provider)
+    const nonce = await sender.getTransactionCount()
+
+    const results = await Promise.allSettled(
+      wallets.map((w, idx) => hre.run('wallet:send', {
         fromPrivateKey: ALT_FAUCET_PRIV_KEY,
-        to: wallet.address,
+        to: w.address,
         value: DRIP_AMT,
+        nonce: nonce + idx,
         dry: false,
-      })
+      }))
+    )
+
+    // Only display error messages
+    results.forEach((result, idx) => {
+      if (result.status !== 'fulfilled') {
+        console.log(`Dripping ${wallets[idx].address} failed: ${result.reason}.`)
+      }
+    })
+    if (results.every(res => res.status === 'fulfilled')) {
+      console.log(`Dripping all wallets successfully.`)
     }
+
   } else {
     console.log('No dripping as faucet address is not set.');
   }

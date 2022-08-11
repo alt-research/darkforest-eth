@@ -26,6 +26,7 @@ task('wallet:send', 'send the native currency of this chain (ETH on mainnet, xDA
   .addParam('from', 'sender address', "", types.string)
   .addParam('to', 'receiver address', undefined, types.string)
   .addParam('value', 'value to send (in units of ETH/xDAI)', undefined, types.float)
+  .addParam('nonce', 'nonce to be set', -1, types.int)
   .addParam(
     'dry',
     "dry run only (doesn't carry out transaction, just verifies that it's valid). default: true",
@@ -43,6 +44,7 @@ async function sendValue(
     to: string;
     value: number;
     dry: boolean;
+    nonce: number;
     gaspricegwei: number;
     confirmations: number;
   },
@@ -99,10 +101,12 @@ async function sendValue(
 
   if (!args.dry) {
     // send the tx
+    const { nonce } = args
     const txResponse = await sender.sendTransaction({
       to: args.to,
       value: parsedValue,
       gasPrice,
+      ...(nonce >= 0 ? { nonce } : undefined)
     });
     console.log(`Tx submitted with hash: ${txResponse.hash}\n`);
 
