@@ -1,5 +1,6 @@
 # Configuration for a Dark Forest universe
 # Defined in TOML as per https://toml.io/en/v0.5.0
+# DarkForest acadia2 config
 
 [initializers]
 START_PAUSED = true
@@ -37,6 +38,7 @@ ABANDON_RANGE_CHANGE_PERCENT = 150
 ##############
 CAPTURE_ZONES_ENABLED = true
 # How often zones change location. Max 255.
+# This is about 14 mins on acadia2 network
 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 255
 # How big the capture zones are
 CAPTURE_ZONE_RADIUS = 1000
@@ -54,7 +56,8 @@ CAPTURE_ZONE_PLANET_LEVEL_SCORE = [
   100_000_000
 ]
 # After invading, the number of blocks you need to hold a planet for before capturing
-CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = 2048
+# acadia2 network is having 2s block time. This is 3 hours
+CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = 5400
 # Number of capture zones that spawn each time they generate
 CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 3
 
@@ -63,7 +66,8 @@ CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 3
 ######################
 ARTIFACT_POINT_VALUES = [0, 100_000, 200_000, 500_000, 20_000_000, 50_000_000]
 MAX_NATURAL_PLANET_LEVEL = 9
-TIME_FACTOR_HUNDREDTHS = 100 # speedup/slowdown game
+# 1000 = 10x game speed
+TIME_FACTOR_HUNDREDTHS = 1000 # speedup/slowdown game
 PERLIN_THRESHOLD_1 = 14
 PERLIN_THRESHOLD_2 = 15
 PERLIN_THRESHOLD_3 = 19
