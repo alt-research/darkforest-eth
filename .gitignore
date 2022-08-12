@@ -4,6 +4,8 @@ yarn-error.log
 .gitkeep
 *.env
 .env.prod
+.env.localhost
+.env.acadia2
 
 .openzeppelin/unknown-*.json
 !.openzeppelin/unknown-100.json

@@ -7,7 +7,7 @@ require('dotenv').config();
 const { ALT_FAUCET_PRIV_KEY } = process.env
 const DRIP_AMT = 0.3
 
-task('alt-whitelist:generate', 'create the account and register to the game')
+task('alt:whitelist-generate', 'create the account and register to the game')
   .addPositionalParam('number', 'number of keys', undefined, types.int)
   .setAction(whitelistGenerate);
 
@@ -64,3 +64,5 @@ async function whitelistGenerate(
   const content = wallets.map(w => `${w.address}, ${w.privateKey}`).join('\n')
   fs.appendFileSync('./alt-whitelist-addr.csv', content + '\n')
 }
+
+task('alt:get')

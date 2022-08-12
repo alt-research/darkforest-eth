@@ -321,6 +321,10 @@ contract DFGetterFacet is WithStorage {
         }
     }
 
+    function getPlayerLen() public view returns (uint256 ret) {
+        ret = gs().playerIds.length;
+    }
+
     function bulkGetPlayerIds(uint256 startIdx, uint256 endIdx)
         public
         view
