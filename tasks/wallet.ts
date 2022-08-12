@@ -21,11 +21,11 @@ async function walletInfo({}, hre: HardhatRuntimeEnvironment) {
   console.log('balance:', hre.ethers.utils.formatEther(balance));
 }
 
-task('wallet:send', 'send the native currency of this chain (ETH on mainnet, xDAI on xDAI chain)')
+task('wallet:send', 'send the native currency of this chain (ETH on mainnet, ALT on ALT chain)')
   .addParam('fromPrivateKey', 'sender private key', "", types.string)
   .addParam('from', 'sender address', "", types.string)
   .addParam('to', 'receiver address', undefined, types.string)
-  .addParam('value', 'value to send (in units of ETH/xDAI)', undefined, types.float)
+  .addParam('value', 'value to send (in units of ETH/ALT)', undefined, types.float)
   .addParam('nonce', 'nonce to be set', -1, types.int)
   .addParam(
     'dry',

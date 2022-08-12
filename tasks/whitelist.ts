@@ -4,7 +4,7 @@ import { subtask, task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 task('whitelist:changeDrip', 'change the faucet amount for whitelisted players')
-  .addPositionalParam('value', 'drip value (in ether or xDAI)', undefined, types.float)
+  .addPositionalParam('value', 'drip value (in ether or ALT)', undefined, types.float)
   .setAction(changeDrip);
 
 async function changeDrip(args: { value: number }, hre: HardhatRuntimeEnvironment) {
