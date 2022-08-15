@@ -77,10 +77,10 @@ async function getPlayerScores({}, hre: HardhatRuntimeEnvironment) {
   const playerScores: [string, number][] = players.map(player => [player[1], player[5].toNumber()]);
 
   // sort by score
-  playerScores.sort((p1, p2) => p1[1] - p2[1])
+  playerScores.sort((p1, p2) => p2[1] - p1[1])
 
   console.log(`${numPlayers} players in the game.`)
-  console.log(`Player scores:\n`, playerScores)
+  console.log(`Player scores:`, playerScores)
 
   fs.writeFileSync(
     './alt-player-scores.csv',
