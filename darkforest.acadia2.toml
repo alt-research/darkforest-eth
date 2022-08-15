@@ -76,6 +76,8 @@ INIT_PERLIN_MAX = 14
 SPAWN_RIM_AREA = 0
 BIOME_THRESHOLD_1 = 14
 BIOME_THRESHOLD_2 = 17
+# This score has a basis of one-hundredth, setting this to 100 will increase the score by
+#   1 point for each silver extracted.
 SILVER_SCORE_VALUE = 10
 # PLANET_LEVEL_THRESHOLDS = [
 #   16_777_216,
