@@ -1,13 +1,14 @@
 import { subtask, task, types } from 'hardhat/config';
 import * as fs from 'fs';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { BigNumber } from 'ethers';
 
 require('dotenv').config();
 
 const { ALT_FAUCET_PRIV_KEY } = process.env
 const DRIP_AMT = 0.3
 
-task('alt-whitelist:generate', 'create the account and register to the game')
+task('alt:whitelist-generate', 'create the account and register to the game')
   .addPositionalParam('number', 'number of keys', undefined, types.int)
   .setAction(whitelistGenerate);
 
@@ -63,4 +64,26 @@ async function whitelistGenerate(
   // Write the public/private key to a csv file
   const content = wallets.map(w => `${w.address}, ${w.privateKey}`).join('\n')
   fs.appendFileSync('./alt-whitelist-addr.csv', content + '\n')
+}
+
+task('alt:get-player-scores', 'retrieve all player scores')
+  .setAction(getPlayerScores)
+
+async function getPlayerScores({}, hre: HardhatRuntimeEnvironment) {
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+
+  const numPlayers = await contract.getNPlayers();
+  const players = await contract.bulkGetPlayers(0, numPlayers);
+  const playerScores: [string, number][] = players.map(player => [player[1], player[5].toNumber()]);
+
+  // sort by score
+  playerScores.sort((p1, p2) => p2[1] - p1[1])
+
+  console.log(`${numPlayers} players in the game.`)
+  console.log(`Player scores:`, playerScores)
+
+  fs.writeFileSync(
+    './alt-player-scores.csv',
+    playerScores.map(([addr, score]) => `${addr}, ${score}`).join('\n')
+  )
 }

@@ -31,7 +31,7 @@ import './tasks/upgrades';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
-import './tasks/alt-whitelist';
+import './tasks/alt';
 
 require('dotenv').config();
 
