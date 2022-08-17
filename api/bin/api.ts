@@ -8,13 +8,17 @@ import { app } from '../app'
 import * as http from 'http'
 import Debug from 'debug'
 
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
 const log = Debug('api')
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3011');
+var port = normalizePort(process.env.AL_SERVER_PORT || '3011');
 app.set('port', port);
 
 /**

@@ -21,6 +21,10 @@ log(`Using config ${configFilePath}`)
 // Need to do this because this server app don't have the usual `hardhat --network` param passed in
 hre.changeNetwork(currentNetwork)
 
+// For converting player score to leaderboard
+const scoreFilePath = path.join(__dirname, '..', 'alt-player-scores.csv')
+const leaderboardFilePath = path.join(__dirname, 'data', 'leaderboard.json')
+
 function setup() {
   log("Setup server...")
 
@@ -59,9 +63,21 @@ function setup() {
 
 async function generateScoreFile() {
   await hre.run('alt:get-player-scores')
-  const fromPath = path.join(__dirname, '..', 'alt-player-scores.csv')
-  const toPath = path.join(__dirname, 'data', 'leaderboard.json')
-  fs.copyFileSync(fromPath, toPath)
+
+  try {
+    const content = fs.readFileSync(scoreFilePath, {encoding: 'utf8'})
+      .split('\n')
+      .filter(row => row.trim() !== '')
+
+    const playerScores = content.map(row => {
+      const split = row.split(',').map(v => v.trim())
+      return { ethAddress: split[0], score: Number(split[1]) }
+    })
+
+    fs.writeFileSync(leaderboardFilePath, JSON.stringify(playerScores))
+  } catch (err: any) {
+    console.error(`generateScoreFile error: ${err.toString()}`)
+  }
 }
 
 export {
