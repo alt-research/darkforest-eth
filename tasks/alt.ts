@@ -8,6 +8,9 @@ require('dotenv').config();
 const { ALT_FAUCET_PRIV_KEY } = process.env
 const DRIP_AMT = 0.3
 
+// Somehow the Player type is not exported from darkForest typechain
+type Player = [boolean, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, boolean]
+
 task('alt:whitelist-generate', 'create the account and register to the game')
   .addPositionalParam('number', 'number of keys', undefined, types.int)
   .setAction(whitelistGenerate);
@@ -73,7 +76,7 @@ async function getPlayerScores({}, hre: HardhatRuntimeEnvironment) {
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const numPlayers = await contract.getNPlayers();
-  const players = await contract.bulkGetPlayers(0, numPlayers);
+  const players: Player[] = await contract.bulkGetPlayers(0, numPlayers);
   const playerScores: [string, number][] = players.map(player => [player[1], player[5].toNumber()]);
 
   // sort by score

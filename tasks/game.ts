@@ -18,6 +18,8 @@ task('game:pause', 'pause the game').setAction(gamePause);
 async function gamePause({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
+  console.log('Game is paused now.')
+
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const pauseReceipt = await contract.pause();
@@ -28,6 +30,8 @@ task('game:resume', 'resume the game').setAction(gameResume);
 
 async function gameResume({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
+
+  console.log('Game is resumed now.')
 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 

@@ -5,9 +5,9 @@
 [initializers]
 START_PAUSED = true
 ADMIN_CAN_ADD_PLANETS = true
-TOKEN_MINT_END_TIMESTAMP = 2022-08-14T11:00:00.000Z # 19:00 in UTC +8
+TOKEN_MINT_END_TIMESTAMP = 2022-08-30T11:00:00.000Z # 19:00 in UTC +8
 WORLD_RADIUS_LOCKED = false
-WORLD_RADIUS_MIN = 12_000
+WORLD_RADIUS_MIN = 36_000
 
 ##################################
 # SNARK keys & Perlin parameters #
@@ -67,7 +67,7 @@ CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 3
 ARTIFACT_POINT_VALUES = [0, 100_000, 200_000, 500_000, 20_000_000, 50_000_000]
 MAX_NATURAL_PLANET_LEVEL = 9
 # 1000 = 10x game speed
-TIME_FACTOR_HUNDREDTHS = 1000 # speedup/slowdown game
+TIME_FACTOR_HUNDREDTHS = 500 # speedup/slowdown game
 PERLIN_THRESHOLD_1 = 14
 PERLIN_THRESHOLD_2 = 15
 PERLIN_THRESHOLD_3 = 19
@@ -76,6 +76,8 @@ INIT_PERLIN_MAX = 14
 SPAWN_RIM_AREA = 0
 BIOME_THRESHOLD_1 = 14
 BIOME_THRESHOLD_2 = 17
+# This score has a basis of one-hundredth, setting this to 100 will increase the score by
+#   1 point for each silver extracted.
 SILVER_SCORE_VALUE = 10
 # PLANET_LEVEL_THRESHOLDS = [
 #   16_777_216,
