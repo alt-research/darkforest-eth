@@ -6,6 +6,9 @@
 
 import { app } from '../app'
 import * as http from 'http'
+import Debug from 'debug'
+
+const log = Debug('api')
 
 /**
  * Get port from environment and store in Express.
@@ -85,5 +88,5 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr!.port;
-  console.log('Listening on ' + bind);
+  log('Listening on ' + bind);
 }

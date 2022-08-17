@@ -11,6 +11,7 @@ import 'hardhat-diamond-abi';
 import '@typechain/hardhat';
 import 'hardhat-circom';
 import 'hardhat-contract-sizer';
+import 'hardhat-change-network';
 import '@solidstate/hardhat-4byte-uploader';
 import { extendEnvironment, HardhatUserConfig } from 'hardhat/config';
 import { lazyObject } from 'hardhat/plugins';
