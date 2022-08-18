@@ -157,25 +157,47 @@ task('whitelist:register', 'add address(es) to whitelist')
 async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
+  const joinAddrs = (arr: [string, boolean][]) => arr.map(tuple => tuple[0]).join(', ');
+
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
-  for (const address of args.address.split(',')) {
-    const isAddress = hre.ethers.utils.isAddress(address);
-    if (!isAddress) {
-      throw new Error(`Address ${address} is NOT a valid address.`);
-    }
+  const addresses = args.address.split(',');
 
-    const isWhitelisted = await contract.isWhitelisted(address);
-    if (isWhitelisted) {
-      throw new Error(`Address ${address} is already whitelisted.`);
-    }
-
-    const whitelistTx = await contract.addToWhitelist(address);
-    await whitelistTx.wait();
-
-    const balance = await hre.ethers.provider.getBalance(contract.address);
-    console.log('whitelist balance:', hre.ethers.utils.formatEther(balance));
-
-    console.log(`[${new Date()}] Registered player ${address}.`);
+  // Check if these are valid addresses
+  let addrCheckResult: [string, boolean][] = addresses.map(addr => [addr, hre.ethers.utils.isAddress(addr)]);
+  let filteredOut = addrCheckResult.filter(entry => !entry[1]);
+  if (filteredOut.length > 0) {
+    console.error(`These are NOT valid address: ${joinAddrs(filteredOut)}`)
   }
+
+  let filtered = addrCheckResult.filter(entry => entry[1]).map(entry => entry[0]);
+
+  // Check if these are whitelisted addresses
+  let checkResult = (await Promise.allSettled(filtered.map(addr => contract.isWhitelisted(addr))))
+    .map(settledRes => settledRes.status === 'fulfilled' && settledRes.value)
+  addrCheckResult = filtered.map((addr, idx) => [addr, checkResult[idx]])
+  filteredOut = addrCheckResult.filter(entry => entry[1]);
+  if (filteredOut.length > 0) {
+    console.error(`These addresses are already whitelisted: ${joinAddrs(filteredOut)}`)
+  }
+
+  filtered = addrCheckResult.filter(entry => !entry[1]).map(entry => entry[0]);
+
+  // Actual whitelisting process
+  const signer = hre.ethers.provider.getSigner();
+  const txCnt = await signer.getTransactionCount();
+
+  console.log(`signer: ${await signer.getAddress()}, txCnt: ${txCnt}`);
+
+  checkResult = (await Promise.allSettled(
+    filtered.map((addr, idx) => contract.addToWhitelist(addr, { nonce: txCnt + idx }))
+  )).map((settledRes, idx) => settledRes.status === 'fulfilled')
+  addrCheckResult = filtered.map((addr, idx) => [addr, checkResult[idx]])
+  filteredOut = addrCheckResult.filter(entry => !entry[1]);
+  if (filteredOut.length > 0) {
+    console.error(`Whitelisting of these addresses failed: ${joinAddrs(filteredOut)}`)
+  }
+
+  filtered = addrCheckResult.filter(entry => entry[1]).map(entry => entry[0]);
+  console.log(`[${new Date()}] ${filtered.length} addresses are whitelisted successfully: ${filtered.join(', ')}`)
 }
