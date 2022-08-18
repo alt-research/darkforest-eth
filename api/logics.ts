@@ -32,7 +32,12 @@ function setup() {
   const sdt = DateTime.fromISO(config['gameStart'], { zone: 'utc' })
   // ss, mm, hh, day-of-month, month, day of week
   cron.schedule(`${sdt.second} ${sdt.minute} ${sdt.hour} ${sdt.day} ${sdt.month} *`, async () => {
-    await hre.run('game:resume')
+    try {
+      await hre.run('game:resume')
+    } catch (err: any) {
+      log(`Error in game resuming: ${err.toString()}`)
+    }
+
     genScoreTask.start()
   }, {
     scheduled: true,
@@ -44,8 +49,12 @@ function setup() {
   const edt = DateTime.fromISO(config['gameEnd'], { zone: 'utc' })
   cron.schedule(`${edt.second} ${edt.minute} ${edt.hour} ${edt.day} ${edt.month} *`, async () => {
     genScoreTask.stop()
-    await hre.run('game:pause')
-    await generateScoreFile() // Generate the player score the last time
+    try {
+      await hre.run('game:pause')
+      await generateScoreFile() // Generate the player score the last time
+    } catch (err: any) {
+      log(`Error in game pausing: ${err.toString()}`)
+    }
   }, {
     scheduled: true,
     timezone: 'Etc/GMT0'
@@ -55,7 +64,11 @@ function setup() {
   // 3. For generating score info regularly
   const interval = (config['scoreRefreshInterval'] as number) || 5
   const genScoreTask = cron.schedule(`0 */${interval} * * * *`, async() => {
-    await generateScoreFile()
+    try {
+      await generateScoreFile()
+    } catch (err: any) {
+      log(`Error in generating player scores: ${err.toString()}`)
+    }
   }, {
     scheduled: false
   })
