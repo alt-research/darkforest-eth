@@ -2,6 +2,7 @@ import { generateKeys, keyHash, keysPerTx } from '@darkforest_eth/whitelist';
 import * as fs from 'fs';
 import { subtask, task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { BATCH_AMT, SLEEP_MS } from './config';
 
 task('whitelist:changeDrip', 'change the faucet amount for whitelisted players')
   .addPositionalParam('value', 'drip value (in ether or ALT)', undefined, types.float)
@@ -145,9 +146,6 @@ async function whitelistExistsKeyHash(args: { key: string }, hre: HardhatRuntime
   console.log(`Key ${args.key} is${isValid ? '' : ' NOT'} valid.`);
 }
 
-const REGISTER_BATCH: number = 50
-const REGISTER_BATCH_SLEEP: number = 3000 // In ms
-
 task('whitelist:register', 'add address(es) to whitelist')
   .addParam(
     'address',
@@ -198,11 +196,11 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
   let registerFailures: string[] = []
   let registerSuccesses: string[] = []
 
-  const batchTotal = Math.floor(filtered.length / REGISTER_BATCH) + ((filtered.length % REGISTER_BATCH) ? 1 : 0)
+  const batchTotal = Math.floor(filtered.length / BATCH_AMT) + ((filtered.length % BATCH_AMT) ? 1 : 0)
 
   for (let batchi = 0; batchi < batchTotal; batchi++) {
-    const filteredStartIdx = batchi * REGISTER_BATCH
-    const filteredEndIdx = Math.min(filtered.length, (batchi + 1) * REGISTER_BATCH)
+    const filteredStartIdx = batchi * BATCH_AMT
+    const filteredEndIdx = Math.min(filtered.length, (batchi + 1) * BATCH_AMT)
 
     const addrs = filtered.slice(filteredStartIdx, filteredEndIdx)
     console.log(`registering addr ${filteredStartIdx + 1} - ${filteredEndIdx} of ${filtered.length}...`)
@@ -221,7 +219,7 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
     )
 
     // Always sleep after the batch of transactions above
-    await sleep(REGISTER_BATCH_SLEEP)
+    await sleep(SLEEP_MS)
   }
 
   console.log(`[${new Date()}]`)

@@ -2,6 +2,7 @@ import { subtask, task, types } from 'hardhat/config';
 import * as fs from 'fs';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BigNumber } from 'ethers';
+import { BATCH_AMT, SLEEP_MS } from './config';
 
 require('dotenv').config();
 
@@ -10,6 +11,10 @@ const DRIP_AMT = 0.3
 
 // Somehow the Player type is not exported from darkForest typechain
 type Player = [boolean, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, boolean]
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms))
+}
 
 task('alt:whitelist-generate', 'create the account and register to the game')
   .addPositionalParam('number', 'number of keys', undefined, types.int)
@@ -41,26 +46,41 @@ async function whitelistGenerate(
     const sender = new hre.ethers.Wallet(ALT_FAUCET_PRIV_KEY, hre.ethers.provider)
     const nonce = await sender.getTransactionCount()
 
-    const results = await Promise.allSettled(
-      wallets.map((w, idx) => hre.run('wallet:send', {
-        fromPrivateKey: ALT_FAUCET_PRIV_KEY,
-        to: w.address,
-        value: DRIP_AMT,
-        nonce: nonce + idx,
-        dry: false,
-      }))
-    )
 
-    // Only display error messages
-    results.forEach((result, idx) => {
-      if (result.status !== 'fulfilled') {
-        console.log(`Dripping ${wallets[idx].address} failed: ${result.reason}.`)
-      }
-    })
-    if (results.every(res => res.status === 'fulfilled')) {
-      console.log(`Dripping all wallets successfully.`)
+    let dripSuccess: string[] = []
+    let dripFailure: string[] = []
+
+    const batchTotal = Math.floor(wallets.length/BATCH_AMT) + (wallets.length % BATCH_AMT ? 1 : 0)
+    for (let batchi = 0; batchi < batchTotal; batchi++) {
+      const walletStartIdx = batchi * BATCH_AMT
+      const walletEndIdx = Math.min((batchi + 1) * BATCH_AMT, wallets.length)
+      console.log(`dripping addr ${walletStartIdx + 1} - ${walletEndIdx} of ${wallets.length}...`)
+
+      const partialWallets = wallets.slice(walletStartIdx, walletEndIdx)
+
+      const results = await Promise.allSettled(
+        partialWallets.map((w, idx) => hre.run('wallet:send', {
+          fromPrivateKey: ALT_FAUCET_PRIV_KEY,
+          to: w.address,
+          value: DRIP_AMT,
+          nonce: nonce + walletStartIdx + idx,
+          dry: false,
+        }))
+      )
+
+      const pAddrBool: [string, boolean][] = results.map((res, idx) =>
+        [partialWallets[idx].address, res.status === 'fulfilled'])
+
+      dripSuccess = dripSuccess.concat(pAddrBool.filter(v => v[1]).map(v => v[0]))
+      dripFailure = dripFailure.concat(pAddrBool.filter(v => !v[1]).map(v => v[0]))
+
+      await sleep(SLEEP_MS)
     }
 
+    if (dripFailure.length > 0) {
+      console.log(`Drip ${dripFailure.length} addresses failed:`, dripFailure.join(', '))
+    }
+    console.log(`Drip ${dripSuccess.length} addresses succeeded:`, dripSuccess.join(', '))
   } else {
     console.log('No dripping as faucet address is not set.');
   }
