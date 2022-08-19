@@ -30,6 +30,7 @@ async function whitelistGenerate(
   wallets.forEach(wallet => {
     console.log(`addr: ${wallet.address}, private: ${wallet.privateKey}`)
   })
+  console.log('')
 
   // whitelist these addresses
   const addresses = wallets.map(w => w.address).join(',')

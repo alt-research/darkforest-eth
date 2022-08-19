@@ -145,6 +145,9 @@ async function whitelistExistsKeyHash(args: { key: string }, hre: HardhatRuntime
   console.log(`Key ${args.key} is${isValid ? '' : ' NOT'} valid.`);
 }
 
+const REGISTER_BATCH: number = 50
+const REGISTER_BATCH_SLEEP: number = 3000 // In ms
+
 task('whitelist:register', 'add address(es) to whitelist')
   .addParam(
     'address',
@@ -158,16 +161,16 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
   await hre.run('utils:assertChainId');
 
   const joinAddrs = (arr: [string, boolean][]) => arr.map(tuple => tuple[0]).join(', ');
+  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
-
   const addresses = args.address.split(',');
 
   // Check if these are valid addresses
   let addrCheckResult: [string, boolean][] = addresses.map(addr => [addr, hre.ethers.utils.isAddress(addr)]);
   let filteredOut = addrCheckResult.filter(entry => !entry[1]);
   if (filteredOut.length > 0) {
-    console.error(`These are NOT valid address: ${joinAddrs(filteredOut)}`)
+    console.error(`These are NOT valid address: ${joinAddrs(filteredOut)}\n`)
   }
 
   let filtered = addrCheckResult.filter(entry => entry[1]).map(entry => entry[0]);
@@ -178,26 +181,53 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
   addrCheckResult = filtered.map((addr, idx) => [addr, checkResult[idx]])
   filteredOut = addrCheckResult.filter(entry => entry[1]);
   if (filteredOut.length > 0) {
-    console.error(`These addresses are already whitelisted: ${joinAddrs(filteredOut)}`)
+    console.error(`These addresses are already whitelisted: ${joinAddrs(filteredOut)}\n`)
   }
 
   filtered = addrCheckResult.filter(entry => !entry[1]).map(entry => entry[0]);
 
   // Actual whitelisting process
   const signer = hre.ethers.provider.getSigner();
-  const txCnt = await signer.getTransactionCount();
+  const [txCnt, signerAddr] = await Promise.all([
+    signer.getTransactionCount(),
+    signer.getAddress(),
+  ])
 
-  console.log(`signer: ${await signer.getAddress()}, txCnt: ${txCnt}`);
+  console.log(`register signer: ${signerAddr}, txCnt: ${txCnt}`);
 
-  checkResult = (await Promise.allSettled(
-    filtered.map((addr, idx) => contract.addToWhitelist(addr, { nonce: txCnt + idx }))
-  )).map((settledRes, idx) => settledRes.status === 'fulfilled')
-  addrCheckResult = filtered.map((addr, idx) => [addr, checkResult[idx]])
-  filteredOut = addrCheckResult.filter(entry => !entry[1]);
-  if (filteredOut.length > 0) {
-    console.error(`Whitelisting of these addresses failed: ${joinAddrs(filteredOut)}`)
+  let registerFailures: string[] = []
+  let registerSuccesses: string[] = []
+
+  const batchTotal = Math.floor(filtered.length / REGISTER_BATCH) + ((filtered.length % REGISTER_BATCH) ? 1 : 0)
+
+  for (let batchi = 0; batchi < batchTotal; batchi++) {
+    const filteredStartIdx = batchi * REGISTER_BATCH
+    const filteredEndIdx = Math.min(filtered.length, (batchi + 1) * REGISTER_BATCH)
+
+    const addrs = filtered.slice(filteredStartIdx, filteredEndIdx)
+    console.log(`registering addr ${filteredStartIdx + 1} - ${filteredEndIdx} of ${filtered.length}...`)
+
+    checkResult = (await Promise.allSettled(
+      addrs.map((addr, idx) => contract.addToWhitelist(addr, { nonce: txCnt + filteredStartIdx + idx }))
+    )).map(settledRes => settledRes.status === 'fulfilled')
+    addrCheckResult = addrs.map((addr, idx) => [addr, checkResult[idx]])
+
+    registerFailures = registerFailures.concat(
+      addrCheckResult.filter(entry => !entry[1]).map(entry => entry[0])
+    )
+
+    registerSuccesses = registerSuccesses.concat(
+      addrCheckResult.filter(entry => entry[1]).map(entry => entry[0])
+    )
+
+    // Always sleep after the batch of transactions above
+    await sleep(REGISTER_BATCH_SLEEP)
   }
 
-  filtered = addrCheckResult.filter(entry => entry[1]).map(entry => entry[0]);
-  console.log(`[${new Date()}] ${filtered.length} addresses are whitelisted successfully: ${filtered.join(', ')}`)
+  console.log(`[${new Date()}]`)
+  if (registerFailures.length > 0) {
+    console.log(`${registerFailures.length} addresses register failed:`, registerFailures.join(', '), '\n')
+  }
+
+  console.log(`${registerSuccesses.length} addresses register succeeded:`, registerSuccesses.join(', '), '\n')
 }
