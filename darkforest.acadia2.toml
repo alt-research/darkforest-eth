@@ -5,7 +5,7 @@
 [initializers]
 START_PAUSED = true
 ADMIN_CAN_ADD_PLANETS = true
-TOKEN_MINT_END_TIMESTAMP = 2022-08-30T11:00:00.000Z # 19:00 in UTC +8
+TOKEN_MINT_END_TIMESTAMP = 2022-08-21T12:00:00.000Z # 20:00 in UTC +8
 WORLD_RADIUS_LOCKED = false
 WORLD_RADIUS_MIN = 36_000
 
@@ -41,7 +41,7 @@ CAPTURE_ZONES_ENABLED = true
 # This is about 14 mins on acadia2 network
 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 255
 # How big the capture zones are
-CAPTURE_ZONE_RADIUS = 1000
+CAPTURE_ZONE_RADIUS = 2000
 # The amount of score each planet level gives for capturing
 CAPTURE_ZONE_PLANET_LEVEL_SCORE = [
   0,

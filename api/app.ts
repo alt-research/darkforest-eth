@@ -19,7 +19,7 @@ app.use('/', indexRouter);
 
 // This is the 404 error
 app.use(function(req, res, next) {
-  return res.status(404).json()
+  return res.status(404).json({ error: "Invalid path" })
 });
 
 export {

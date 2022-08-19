@@ -28,42 +28,72 @@ const leaderboardFilePath = path.join(__dirname, 'data', 'leaderboard.json')
 function setup() {
   log("Setup server...")
 
-  // 1. For game starts
+  const interval = (config['scoreRefreshInterval'] as number) || 3
+  const scoreTask = genScoreTask(interval)
+
   const sdt = DateTime.fromISO(config['gameStart'], { zone: 'utc' })
-  // ss, mm, hh, day-of-month, month, day of week
-  cron.schedule(`${sdt.second} ${sdt.minute} ${sdt.hour} ${sdt.day} ${sdt.month} *`, async () => {
-    try {
-      await hre.run('game:resume')
-    } catch (err: any) {
-      log(`Error in game resuming: ${err.toString()}`)
-    }
-
-    genScoreTask.start()
-  }, {
-    scheduled: true,
-    timezone: 'Etc/GMT0'
-  })
-  log(`Game is scheduled to resume at ${sdt.toString()}`)
-
-  // 2. For game ends
   const edt = DateTime.fromISO(config['gameEnd'], { zone: 'utc' })
-  cron.schedule(`${edt.second} ${edt.minute} ${edt.hour} ${edt.day} ${edt.month} *`, async () => {
-    genScoreTask.stop()
-    try {
-      await hre.run('game:pause')
-      await generateScoreFile() // Generate the player score the last time
-    } catch (err: any) {
-      log(`Error in game pausing: ${err.toString()}`)
-    }
-  }, {
-    scheduled: true,
-    timezone: 'Etc/GMT0'
-  })
-  log(`Game is scheduled to pause at ${edt.toString()}`)
+  const current = DateTime.utc()
 
-  // 3. For generating score info regularly
-  const interval = (config['scoreRefreshInterval'] as number) || 5
-  const genScoreTask = cron.schedule(`0 */${interval} * * * *`, async() => {
+  const scheduleStart = (sdt: DateTime) =>
+    cron.schedule(
+      `${sdt.second} ${sdt.minute} ${sdt.hour} ${sdt.day} ${sdt.month} *`,
+      () => startGame(scoreTask),
+      { scheduled: true, timezone: 'Etc/GMT0' }
+    )
+
+  const schedulePause = (edt: DateTime) =>
+    cron.schedule(
+      `${edt.second} ${edt.minute} ${edt.hour} ${edt.day} ${edt.month} *`,
+      () => pauseGame(scoreTask),
+      { scheduled: true, timezone: 'Etc/GMT0' }
+    )
+
+  if (current < sdt) {
+    // The game is scheduled to start
+    scheduleStart(sdt)
+    log(`Game is started at ${sdt.toString()}.`)
+
+    schedulePause(edt)
+    log(`Game is scheduled to pause at ${edt.toString()}.`)
+
+  } else if (current < edt) {
+    // It is mid-way in the scheduled game
+    startGame(scoreTask)
+
+    schedulePause(edt)
+    log(`Game is scheduled to pause at ${edt.toString()}.`)
+  } else {
+    // The scheduled game has ended
+    pauseGame(scoreTask)
+    log(`Game is paused at ${edt.toString()}.`)
+  }
+}
+
+async function startGame(scoreTask: cron.ScheduledTask): Promise<void> {
+  try {
+    await hre.run('game:resume')
+  } catch (err: any) {
+    log(`Error in game starting: ${err.toString()}`)
+  }
+  scoreTask.start()
+}
+
+async function pauseGame(scoreTask: cron.ScheduledTask): Promise<void> {
+  try {
+    scoreTask.stop()
+    await hre.run('game:pause')
+  } catch (err: any) {
+    log(`Error in game pausing: ${err.toString()}`)
+  }
+
+  // Generate the last score report
+  await generateScoreFile()
+}
+
+// For generating score info regularly
+function genScoreTask(interval: number): cron.ScheduledTask {
+  return cron.schedule(`0 */${interval} * * * *`, async() => {
     try {
       await generateScoreFile()
     } catch (err: any) {
@@ -74,7 +104,7 @@ function setup() {
   })
 }
 
-async function generateScoreFile() {
+async function generateScoreFile(): Promise<void> {
   await hre.run('alt:get-player-scores')
 
   try {
