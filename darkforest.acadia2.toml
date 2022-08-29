@@ -37,9 +37,8 @@ ABANDON_RANGE_CHANGE_PERCENT = 150
 # Capture zones #
 ##############
 CAPTURE_ZONES_ENABLED = true
-# How often zones change location. Max 255.
-# This is about 14 mins on acadia2 network
-CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 255
+# Change every 6 hours (2s block time)
+CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 10800
 # How big the capture zones are
 CAPTURE_ZONE_RADIUS = 2000
 # The amount of score each planet level gives for capturing
