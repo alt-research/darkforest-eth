@@ -114,7 +114,11 @@ async function generateScoreFile(): Promise<void> {
 
     const playerScores = content.map(row => {
       const split = row.split(',').map(v => v.trim())
-      return { ethAddress: split[0], score: Number(split[1]) }
+      return {
+        ethAddress: split[0],
+        score: Number(split[1]),
+        txCount: Number(split[2]),
+      }
     })
 
     fs.writeFileSync(leaderboardFilePath, JSON.stringify(playerScores))

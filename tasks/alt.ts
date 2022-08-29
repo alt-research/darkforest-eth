@@ -96,17 +96,23 @@ task('alt:get-player-scores', 'retrieve all player scores')
 async function getPlayerScores({}, hre: HardhatRuntimeEnvironment) {
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
+  const provider = hre.ethers.provider;
+
   const numPlayers = await contract.getNPlayers();
   const players: Player[] = await contract.bulkGetPlayers(0, numPlayers);
-  const playerScores: [string, number][] = players.map(player => [player[1], player[5].toNumber()]);
+
+  // [player address, player score, player tx count]
+  let data: Array<[string, number, number]> = players.map(player => [player[1], player[5].toNumber(), 0]);
+  const txCounts = await Promise.all(data.map(row => provider.getTransactionCount(row[0])));
+  data = data.map((row, idx) => [row[0], row[1], txCounts[idx]]);
 
   // sort by score
-  playerScores.sort((p1, p2) => p2[1] - p1[1])
+  data.sort((p1, p2) => p2[1] - p1[1])
 
   console.log(`${numPlayers} player scores read from the game.`)
 
   fs.writeFileSync(
     './alt-player-scores.csv',
-    playerScores.map(([addr, score]) => `${addr}, ${score}`).join('\n')
+    data.map(([addr, score, txCount]) => `${addr}, ${score}, ${txCount}`).join('\n')
   )
 }
