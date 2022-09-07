@@ -5,17 +5,17 @@
 [initializers]
 START_PAUSED = true
 ADMIN_CAN_ADD_PLANETS = true
-TOKEN_MINT_END_TIMESTAMP = 2022-09-05T12:00:00.000Z # 20:00 in UTC +8
+TOKEN_MINT_END_TIMESTAMP = 2022-09-11T12:00:00.000Z # 20:00 in UTC +8
 WORLD_RADIUS_LOCKED = false
-WORLD_RADIUS_MIN = 36_000
+WORLD_RADIUS_MIN = 40_000
 
 ##################################
 # SNARK keys & Perlin parameters #
 ##################################
 DISABLE_ZK_CHECKS = false
-PLANETHASH_KEY = 115
-SPACETYPE_KEY = 116
-BIOMEBASE_KEY = 117
+PLANETHASH_KEY = 502
+SPACETYPE_KEY = 503
+BIOMEBASE_KEY = 504
 PERLIN_MIRROR_X = false
 PERLIN_MIRROR_Y = false
 PERLIN_LENGTH_SCALE = 16384 # must be a power of two no greater than 16384
@@ -37,10 +37,10 @@ ABANDON_RANGE_CHANGE_PERCENT = 150
 # Capture zones #
 ##############
 CAPTURE_ZONES_ENABLED = true
-# Change every 6 hours (2s block time)
-CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 10800
+# Change every 30 mins (2s block time)
+CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 900
 # How big the capture zones are
-CAPTURE_ZONE_RADIUS = 2000
+CAPTURE_ZONE_RADIUS = 3000
 # The amount of score each planet level gives for capturing
 CAPTURE_ZONE_PLANET_LEVEL_SCORE = [
   0,
@@ -58,7 +58,7 @@ CAPTURE_ZONE_PLANET_LEVEL_SCORE = [
 # acadia2 network is having 2s block time. This is 3 hours
 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = 5400
 # Number of capture zones that spawn each time they generate
-CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 3
+CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 4
 
 ######################
 # Game configuration #
@@ -77,7 +77,7 @@ BIOME_THRESHOLD_1 = 14
 BIOME_THRESHOLD_2 = 17
 # This score has a basis of one-hundredth, setting this to 100 will increase the score by
 #   1 point for each silver extracted.
-SILVER_SCORE_VALUE = 10
+SILVER_SCORE_VALUE = 100
 # PLANET_LEVEL_THRESHOLDS = [
 #   16_777_216,
 #   4_194_292,
