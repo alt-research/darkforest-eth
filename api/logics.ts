@@ -1,4 +1,8 @@
 import { DateTime } from 'luxon'
+
+import * as dotenv from 'dotenv'
+dotenv.config()
+
 import * as cron from 'node-cron'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -11,12 +15,12 @@ import Debug from 'debug'
 const hre = require('hardhat')
 const log = Debug('api')
 
+// In minutes
+const SCORE_REFRESH_RATE: number = 3
+
 const exec = util.promisify(child.exec)
 
 const currentNetwork = hre.contracts.NETWORK ? hre.contracts.NETWORK : 'localhost'
-const configFilePath = path.join(__dirname, 'config', `${currentNetwork}.json`)
-const config = JSON.parse(fs.readFileSync(configFilePath, { encoding: 'utf8' }))
-log(`Using config ${configFilePath}`)
 
 // Need to do this because this server app don't have the usual `hardhat --network` param passed in
 hre.changeNetwork(currentNetwork)
@@ -28,11 +32,10 @@ const leaderboardFilePath = path.join(__dirname, 'data', 'leaderboard.json')
 function setup() {
   log("Setup server...")
 
-  const interval = (config['scoreRefreshInterval'] as number) || 3
-  const scoreTask = genScoreTask(interval)
+  const scoreTask = genScoreTask(SCORE_REFRESH_RATE)
 
-  const sdt = DateTime.fromISO(config['gameStart'], { zone: 'utc' })
-  const edt = DateTime.fromISO(config['gameEnd'], { zone: 'utc' })
+  const sdt = DateTime.fromISO(process.env.ROUND_START_TIMESTAMP || '', { zone: 'utc' })
+  const edt = DateTime.fromISO(process.env.ROUND_END_TIMESTAMP || '', { zone: 'utc' })
   const current = DateTime.utc()
 
   const scheduleStart = (sdt: DateTime) =>
@@ -52,21 +55,22 @@ function setup() {
   if (current < sdt) {
     // The game is scheduled to start
     scheduleStart(sdt)
-    log(`Game is started at ${sdt.toString()}.`)
+    log(`Game is scheduled to start at ${sdt.toString()}.`)
 
     schedulePause(edt)
-    log(`Game is scheduled to pause at ${edt.toString()}.`)
+    log(`Game is scheduled to end at ${edt.toString()}.`)
 
   } else if (current < edt) {
     // It is mid-way in the scheduled game
     startGame(scoreTask)
+    log(`Game started at ${sdt.toString()}.`)
 
     schedulePause(edt)
-    log(`Game is scheduled to pause at ${edt.toString()}.`)
+    log(`Game is scheduled to end at ${edt.toString()}.`)
   } else {
     // The scheduled game has ended
     pauseGame(scoreTask)
-    log(`Game is paused at ${edt.toString()}.`)
+    log(`Game was ended at ${edt.toString()}.`)
   }
 }
 
