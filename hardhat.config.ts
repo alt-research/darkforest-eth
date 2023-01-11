@@ -88,7 +88,7 @@ const mainnet = {
 };
 
 const acadia2 = {
-  url: 'https://acadia2-alt-producer-archive-rpc.altresearch.xyz/',
+  url: 'https://acadia2-alt-producer-archive-rpc.alt.technology/',
   accounts: {
     mnemonic: DEPLOYER_MNEMONIC,
   },
