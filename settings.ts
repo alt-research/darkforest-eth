@@ -12,6 +12,8 @@ import { dedent } from 'ts-dedent';
 declare module 'hardhat/types/runtime' {
   interface HardhatRuntimeEnvironment {
     DEPLOYER_MNEMONIC: string | undefined;
+    FLASHLAYER_CHAIN_ID: string | undefined;
+    FLASHLAYER_URL: string | undefined;
     ADMIN_PUBLIC_ADDRESS: string | undefined;
 
     packageDirs: {
