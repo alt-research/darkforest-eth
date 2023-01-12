@@ -36,7 +36,7 @@ import './tasks/alt';
 
 require('dotenv').config();
 
-const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
+const { DEPLOYER_MNEMONIC, FLASHLAYER_CHAIN_ID, FLASHLAYER_URL, ADMIN_PUBLIC_ADDRESS } = process.env;
 
 // Ensure we can lookup the needed workspace packages
 const packageDirs = {
@@ -46,6 +46,9 @@ const packageDirs = {
 
 extendEnvironment((env: HardhatRuntimeEnvironment) => {
   env.DEPLOYER_MNEMONIC = DEPLOYER_MNEMONIC;
+  env.FLASHLAYER_CHAIN_ID = FLASHLAYER_CHAIN_ID;
+  env.FLASHLAYER_URL = FLASHLAYER_URL;
+
   // cant easily lookup deployer.address here so well have to be ok with undefined and check it later
   env.ADMIN_PUBLIC_ADDRESS = ADMIN_PUBLIC_ADDRESS;
 
@@ -95,6 +98,14 @@ const acadia2 = {
   chainId: 9990,
 }
 
+const custom = {
+  url: FLASHLAYER_URL,
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: Number(FLASHLAYER_CHAIN_ID),
+};
+
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
@@ -104,6 +115,9 @@ const config: HardhatUserConfig = {
     ...(DEPLOYER_MNEMONIC ? { xdai } : undefined),
     ...(DEPLOYER_MNEMONIC ? { mainnet } : undefined),
     ...(DEPLOYER_MNEMONIC ? { acadia2 } : undefined),
+    ...(DEPLOYER_MNEMONIC ? { custom } : undefined),
+    ...(FLASHLAYER_URL ? { custom } : undefined),
+    ...(FLASHLAYER_CHAIN_ID ? { custom } : undefined),
     localhost: {
       url: 'http://localhost:8545/',
       accounts: {
