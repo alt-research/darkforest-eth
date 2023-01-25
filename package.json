@@ -90,6 +90,7 @@
     "hardhat:xdai": "npx hardhat --network xdai",
     "hardhat:mainnet": "npx hardhat --network mainnet",
     "hardhat:acadia2": "npx hardhat --network acadia2",
+    "hardhat:custom": "npx hardhat --network custom",
     "prepare": "yarn compile",
     "compile": "npx hardhat compile",
     "circom:prod": "npx hardhat circom --verbose",
