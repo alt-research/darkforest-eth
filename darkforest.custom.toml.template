@@ -1,6 +1,6 @@
 # Configuration for a Dark Forest universe
 # Defined in TOML as per https://toml.io/en/v0.5.0
-# DarkForest acadia2 config
+# DarkForest demo config
 
 [initializers]
 START_PAUSED = false
@@ -55,8 +55,8 @@ CAPTURE_ZONE_PLANET_LEVEL_SCORE = [
   100_000_000
 ]
 # After invading, the number of blocks you need to hold a planet for before capturing
-# acadia2 network is having 2s block time. This is 3 hours
-CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = 5400
+# Developer network is having 2.8s block time. This is 3 hours
+CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = 3860
 # Number of capture zones that spawn each time they generate
 CAPTURE_ZONES_PER_5000_WORLD_RADIUS = 4
 
