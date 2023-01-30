@@ -229,3 +229,60 @@ async function whitelistRegister(args: { address: string }, hre: HardhatRuntimeE
 
   console.log(`${registerSuccesses.length} addresses register succeeded:`, registerSuccesses.join(', '), '\n')
 }
+
+
+export const waitFor = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+ const runWithRetries = async (fn: any, intervalInMs: number, retries: number) => {
+  if (retries === 0) {
+    throw Error("no retries left");
+  }
+
+  try {
+    await fn();
+  } catch (error) {
+    console.error(error);
+
+    console.log("Remaining Retries: ", retries - 1);
+    console.log(`Wait for ${intervalInMs} ms`);
+    await waitFor(intervalInMs);
+    await runWithRetries(fn, intervalInMs, retries - 1);
+  }
+};
+
+
+task('whitelist:register:batch', 'add addresses to whitelist in batch')
+  .addParam(
+    'addreses',
+    'comma seperated list of addresses',
+  )
+  .addParam("batchSize", "batch size")
+  .setAction(async (args: { addreses: string, batchSize: string }, hre: HardhatRuntimeEnvironment) => {
+    await hre.run('utils:assertChainId');
+  
+    const addressArr = args.addreses.split(',');
+    for(const address of addressArr) {
+      if(hre.ethers.utils.isAddress(address)) {
+        throw new Error('some addresses are invalid');
+      }
+    }
+    
+    const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+    const chunkSize = Number(args.batchSize);
+    for (let i = 0; i < addressArr.length; i += chunkSize) {
+      console.log(i);
+      const chunk = addressArr.slice(i, i + chunkSize);
+  
+      const fn = async () => {
+        const tx = await contract.batchAddToWhitelist(chunk);
+        await tx.wait();
+      };
+      await runWithRetries(fn, 3 * 1000, 10);
+    }    
+  });
+
+
