@@ -85,6 +85,13 @@ contract DFWhitelistFacet is WithStorage {
         ws().allowedAccounts[toAdd] = true;
         ws().allowedAccountsArray.push(toAdd);
     }
+    
+    function batchAddToWhitelist(address[] calldata toAddList) public {
+        for (uint256 i = 0; i < toAddList.length; i++) {
+            address toAdd = toAddList[i];
+            addToWhitelist(toAdd);
+        }
+    }
 
     function removeFromWhitelist(address toRemove) public onlyAdmin {
         require(ws().allowedAccounts[toRemove], "player was not whitelisted to begin with");
