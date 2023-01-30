@@ -257,14 +257,14 @@ export const waitFor = (ms: number) => {
 
 task('whitelist:register:batch', 'add addresses to whitelist in batch')
   .addParam(
-    'addreses',
+    'addresses',
     'comma seperated list of addresses',
   )
   .addParam("batchSize", "batch size")
-  .setAction(async (args: { addreses: string, batchSize: string }, hre: HardhatRuntimeEnvironment) => {
+  .setAction(async (args: { addresses: string, batchSize: string }, hre: HardhatRuntimeEnvironment) => {
     await hre.run('utils:assertChainId');
   
-    const addressArr = args.addreses.split(',');
+    const addressArr = args.addresses.split(',');
     for(const address of addressArr) {
       if(hre.ethers.utils.isAddress(address)) {
         throw new Error('some addresses are invalid');
