@@ -266,7 +266,7 @@ task('whitelist:register:batch', 'add addresses to whitelist in batch')
   
     const addressArr = args.addresses.split(',');
     for(const address of addressArr) {
-      if(hre.ethers.utils.isAddress(address)) {
+      if(!hre.ethers.utils.isAddress(address)) {
         throw new Error('some addresses are invalid');
       }
     }
