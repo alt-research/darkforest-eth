@@ -104,6 +104,7 @@ const custom = {
     mnemonic: DEPLOYER_MNEMONIC,
   },
   chainId: Number(FLASHLAYER_CHAIN_ID),
+  gas: 25000000,
 };
 
 const config: HardhatUserConfig = {
@@ -149,7 +150,6 @@ const config: HardhatUserConfig = {
           balance: '100000000000000000000',
         },
       ],
-      blockGasLimit: 16777215,
       mining: {
         auto: false,
         interval: 1000,
